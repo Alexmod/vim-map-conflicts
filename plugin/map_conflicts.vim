@@ -64,5 +64,6 @@ function! s:run_runtime() abort
 endfunction
 
 command! MapConflictsStatic  call s:run_static()
+
 command! MapConflictsRuntime call s:run_runtime()
 

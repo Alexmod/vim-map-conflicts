@@ -2,7 +2,7 @@
 
 A small helper plugin to inspect **key mapping conflicts** in Vim/Neovim.
 
-It comes with two Python scripts:
+It  comes with two Python scripts:
 
 - `find_vim_conflicts.py` – **static** analysis: scans your config and
   plugin directories and finds:
