@@ -15,14 +15,26 @@ function! s:open_output(lines, title) abort
   new
   setlocal buftype=nofile bufhidden=wipe nobuflisted
   setlocal noswapfile nonumber norelativenumber
-  file [map-conflicts] 
-  if a:title !=# ''
-    call setline(1, a:title)
-    call append(1, repeat([''], 1))
-    call append(2, a:lines)
+  " без скобок, чтобы не ломать чужие автокоманды/regex
+  file map-conflicts
+
+  if type(a:lines) == type([])
+    if a:title !=# ''
+      call setline(1, a:title)
+      call append(1, '')
+      call append(2, a:lines)
+    else
+      call setline(1, a:lines)
+    endif
   else
-    call setline(1, a:lines)
+    if a:title !=# ''
+      call setline(1, a:title)
+      call append(1, ['', a:lines])
+    else
+      call setline(1, a:lines)
+    endif
   endif
+
   normal! gg
 endfunction
 
@@ -66,3 +78,4 @@ endfunction
 
 command! MapConflictsStatic  call s:run_static()
 command! MapConflictsRuntime call s:run_runtime()
+
