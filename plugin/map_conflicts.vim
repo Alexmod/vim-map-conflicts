@@ -11,31 +11,32 @@ function! s:script_dir() abort
   return fnamemodify(expand('<sfile>:p'), ':h')
 endfunction
 
-function! s:open_output(lines, title) abort
+function! s:show_output(lines, title) abort
+  " новый scratch-буфер без имени
   new
   setlocal buftype=nofile bufhidden=wipe nobuflisted
   setlocal noswapfile nonumber norelativenumber
-  " без скобок, чтобы не ломать чужие автокоманды/regex
-  file map-conflicts
 
-  if type(a:lines) == type([])
-    if a:title !=# ''
-      call setline(1, a:title)
-      call append(1, '')
-      call append(2, a:lines)
-    else
-      call setline(1, a:lines)
-    endif
+  if a:title !=# ''
+    call setline(1, a:title)
+    call append(1, '')
+    call append(2, a:lines)
   else
-    if a:title !=# ''
-      call setline(1, a:title)
-      call append(1, ['', a:lines])
-    else
-      call setline(1, a:lines)
-    endif
+    call setline(1, a:lines)
   endif
 
   normal! gg
+endfunction
+
+function! s:run(cmd, title) abort
+  let l:out = systemlist(a:cmd)
+  if v:shell_error
+    echohl ErrorMsg
+    echom 'map-conflicts: command failed: ' . a:cmd
+    echohl None
+    return
+  endif
+  call s:show_output(l:out, a:title)
 endfunction
 
 function! s:run_static() abort
@@ -48,14 +49,7 @@ function! s:run_static() abort
         \ shellescape(expand('~/.config/nvim')),
         \ shellescape(expand('~/.local/share/nvim/plugged'))
         \ )
-  let l:out = systemlist(l:cmd)
-  if v:shell_error
-    echohl ErrorMsg
-    echom 'map-conflicts: static script failed'
-    echohl None
-    return
-  endif
-  call s:open_output(l:out, 'Static mapping conflicts')
+  call s:run(l:cmd, 'Static mapping conflicts')
 endfunction
 
 function! s:run_runtime() abort
@@ -66,14 +60,7 @@ function! s:run_runtime() abort
         \ shellescape(l:py),
         \ shellescape(l:root . '/python/find_vim_conflicts_runtime.py')
         \ )
-  let l:out = systemlist(l:cmd)
-  if v:shell_error
-    echohl ErrorMsg
-    echom 'map-conflicts: runtime script failed'
-    echohl None
-    return
-  endif
-  call s:open_output(l:out, 'Runtime mapping conflicts')
+  call s:run(l:cmd, 'Runtime mapping conflicts')
 endfunction
 
 command! MapConflictsStatic  call s:run_static()
